@@ -9,6 +9,9 @@ Key Features
 * When a user logs in for the first time (or if you have manually unchecked that field for an existing user), they will be warned that they have to change their password and they'll be automatically redirected to their profile page.
 * They must change their password to something new - they are not allowed to re-enter their existing password.
 
+###Support
+https://processwire.com/talk/topic/7043-password-force-change/
+
 ## License
 
 This program is free software; you can redistribute it and/or
