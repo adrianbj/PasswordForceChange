@@ -9,6 +9,7 @@ Key Features
 * Automatic checking of this checkbox when creating a new user is determined by the "Automatic Force Change" module config setting.
 * When a user logs in for the first time (or if you have manually checked that field for an existing user), they will be warned that they have to change their password and they'll be automatically redirected to their profile page.
 * They must change their password to something new - they are not allowed to re-enter their existing password.
+* Bulk "Set All Users" option to at any time, force all users (by selected roles) to change their password.
 
 ###Support
 https://processwire.com/talk/topic/7043-password-force-change/
