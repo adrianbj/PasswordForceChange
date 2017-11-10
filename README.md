@@ -11,7 +11,7 @@ Key Features
 * They must change their password to something new - they are not allowed to re-enter their existing password.
 * Bulk "Set All Users" option to at any time, force all users (by selected roles) to change their password.
 
-###Support
+### Support
 https://processwire.com/talk/topic/7043-password-force-change/
 
 ## License
