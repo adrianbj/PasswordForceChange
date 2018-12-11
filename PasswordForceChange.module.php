@@ -18,6 +18,23 @@
 class PasswordForceChange extends WireData implements Module, ConfigurableModule {
 
     /**
+     * Basic information about module
+     */
+    public static function getModuleInfo() {
+        return array(
+            'title' => 'Force Password Change',
+            'summary' => 'Force users to change password.',
+            'author' => 'Adrian Jones',
+            'href' => 'http://modules.processwire.com/modules/password-force-change/',
+            'version' => '1.0.3',
+            'autoload' => true,
+            'singular' => true,
+            'icon' => 'key',
+            'requires' => 'ProcessWire>=2.5.14',
+        );
+    }
+
+    /**
      * Data as used by the get/set functions
      *
      */
