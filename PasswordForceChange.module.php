@@ -6,7 +6,7 @@
  *
  * Force users to change password the first time they log in
  *
- * ProcessWire 2.x
+ * ProcessWire 3.x
  * Copyright (C) 2011 by Ryan Cramer
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  *
@@ -53,18 +53,18 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
         //exit now if front-end and autoloadFrontend not checked
         if($this->wire('page')->template != 'admin' && !$this->data['autoloadFrontend']) return;
 
-        $this->wire('pages')->addHookBefore('saveReady', $this, 'saveUserChecks');
-        $this->addHookAfter('PageRender::renderPage', $this, 'profileRedirect');
-        $this->addHookAfter('Password::setPass', $this, 'passwordChanged');
-        $this->addHookBefore('InputfieldPassword::render', $this, 'adjustPasswordField');
-        $this->addHookAfter('InputfieldPassword::processInput', $this, 'passwordProcessed'); //just for checking if password fields are empty
+        $this->wire()->addHookBefore('Pages::saveReady', $this, 'saveUserChecks');
+        $this->wire()->addHookAfter('PageRender::renderPage', $this, 'profileRedirect');
+        $this->wire()->addHookAfter('Password::setPass', $this, 'passwordChanged');
+        $this->wire()->addHookBefore('InputfieldPassword::render', $this, 'adjustPasswordField');
+        $this->wire()->addHookAfter('InputfieldPassword::processInput', $this, 'passwordProcessed'); //just for checking if password fields are empty
     }
 
     protected function saveUserChecks(HookEvent $event) {
 
         $page = $event->arguments[0];
 
-        if(!in_array($page->template->id,$this->wire('config')->userTemplateIDs)) return; //return now if not a user template
+        if(!in_array($page->template->id, $this->wire('config')->userTemplateIDs)) return; //return now if not a user template
 
         if($page->isNew()) {
             if($this->data['automaticForceChange']) $page->force_passwd_change = 1;
@@ -106,7 +106,6 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
         }
     }
 
-
     protected function adjustPasswordField(HookEvent $event) {
         if($this->wire('user')->force_passwd_change && $this->wire('user')->isLoggedin()) {
             $process = $this->wire('process');
@@ -121,7 +120,6 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
         }
     }
 
-
     protected function passwordChanged() {
         if($this->wire('user')->isChanged("pass")) {
             $this->wire()->message($this->_("Thank you for changing your password."));
@@ -135,7 +133,7 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
     }
 
-    protected function passwordProcessed($event) {
+    protected function passwordProcessed(HookEvent $event) {
         if($event->object->value == '') {
             $this->profileRedirect();
         }
@@ -152,7 +150,7 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
      */
     public function getModuleConfigInputfields(array $data) {
 
-        wire('modules')->addHookBefore('saveModuleConfigData', null, 'onConfigSave');
+        $this->wire()->addHookBefore('Modules::saveModuleConfigData', $this, 'onConfigSave');
 
         $data = array_merge(self::getDefaultData(), $data);
 
@@ -219,6 +217,23 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
         return $wrapper;
     }
 
+    protected function onConfigSave(HookEvent $event) {
+        $arguments = $event->arguments;
+        if($arguments[0] != 'PasswordForceChange') return;
+        $data = $arguments[1];
+        if($data['bulkAction']!='none') {
+            ini_set('max_execution_time', 300);
+            foreach($this->wire('users') as $u) {
+                if($this->wire('user') != $u && $u->roles->has("name=".implode("|",$data['allowedRoles']))) {
+                    if($u->hasPermission("profile-edit") || $data['bulkAction'] == '') { //shouldn't be necessary because selectables roles are already limited, but just in case permissions are changed between loading of config page and running the batch setting.
+                        $u->of(false);
+                        $u->force_passwd_change = $data['bulkAction']; // 1 for check, blank for clear (uncheck)
+                        $u->save();
+                    }
+                }
+            }
+        }
+    }
 
     public function ___install() {
 
@@ -233,18 +248,15 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
             $f->collapsed = Inputfield::collapsedBlank;
             $f->save();
 
-            $user_templates = $this->wire('config')->userTemplateIDs;
-            foreach ($user_templates as $user_template_id) {
-                $user_template = $this->wire('templates')->get($user_template_id);
-                $user_template->fields->add($f);
-                $user_template->fields->save();
+            foreach ($this->wire('config')->userTemplateIDs as $userTemplateId) {
+                $userTemplate = $this->wire('templates')->get($userTemplateId);
+                $userTemplate->fields->add($f);
+                $userTemplate->fields->save();
             }
-            
 
         }
 
     }
-
 
     public function ___uninstall() {
 
@@ -253,11 +265,10 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
             $f = $this->wire('fields')->force_passwd_change;
 
-            $user_templates = $this->wire('config')->userTemplateIDs;
-            foreach ($user_templates as $user_template_id) {
-                $user_template = $this->wire('templates')->get($user_template_id);
-                $user_template->fields->remove($f);
-                $user_template->fields->save();
+            foreach ($this->wire('config')->userTemplateIDs as $userTemplateId) {
+                $userTemplate = $this->wire('templates')->get($userTemplateId);
+                $userTemplate->fields->remove($f);
+                $userTemplate->fields->save();
             }
 
             $this->wire('fields')->delete($f);
@@ -268,20 +279,3 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
 }
 
-function onConfigSave(HookEvent $event) {
-    $arguments = $event->arguments;
-    if($arguments[0] != 'PasswordForceChange') return;
-    $data = $arguments[1];
-    if($data['bulkAction']!='none') {
-        ini_set('max_execution_time', 300);
-        foreach(wire('users') as $u) {
-            if(wire('user') != $u && $u->roles->has("name=".implode("|",$data['allowedRoles']))) {
-                if($u->hasPermission("profile-edit") || $data['bulkAction'] == '') { //shouldn't be necessary because selectables roles are already limited, but just in case permissions are changed between loading of config page and running the batch setting.
-                    $u->of(false);
-                    $u->force_passwd_change = $data['bulkAction']; // 1 for check, blank for clear (uncheck)
-                    $u->save();
-                }
-            }
-        }
-    }
-}
