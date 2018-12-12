@@ -265,7 +265,7 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
             $f->collapsed = Inputfield::collapsedBlank;
             $f->save();
 
-            foreach ($this->wire('config')->userTemplateIDs as $userTemplateId) {
+            foreach($this->wire('config')->userTemplateIDs as $userTemplateId) {
                 $userTemplate = $this->wire('templates')->get($userTemplateId);
                 $userTemplate->fields->add($f);
                 $userTemplate->fields->save();
@@ -282,7 +282,7 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
             $f = $this->wire('fields')->force_passwd_change;
 
-            foreach ($this->wire('config')->userTemplateIDs as $userTemplateId) {
+            foreach($this->wire('config')->userTemplateIDs as $userTemplateId) {
                 $userTemplate = $this->wire('templates')->get($userTemplateId);
                 $userTemplate->fields->remove($f);
                 $userTemplate->fields->save();
