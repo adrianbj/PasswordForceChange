@@ -6,12 +6,8 @@
  *
  * Force users to change password the first time they log in
  *
- * ProcessWire 3.x
- * Copyright (C) 2011 by Ryan Cramer
+ * Copyright (C) 2020 by Adrian Jones
  * Licensed under GNU/GPL v2, see LICENSE.TXT
- *
- * http://www.processwire.com
- * http://www.ryancramer.com
  *
  */
 
@@ -26,7 +22,7 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
             'summary' => 'Force users to change password.',
             'author' => 'Adrian Jones',
             'href' => 'http://modules.processwire.com/modules/password-force-change/',
-            'version' => '1.0.3',
+            'version' => '1.0.4',
             'autoload' => true,
             'singular' => true,
             'icon' => 'key',
@@ -103,10 +99,10 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
     protected function profileRedirect() {
         if($this->wire('user')->force_passwd_change && $this->wire('user')->isLoggedin()) {
-            $this->wire()->error($this->_("You must change your password and it must not match your last password."));
+            $this->wire()->error($this->_('You must change your password and it must not match your last password.'));
             $f = $this->wire('fields')->get("pass");
             $f->collapsed = Inputfield::collapsedNo;
-            $f->notes = "You must change your password now.";
+            $f->notes = __('You must change your password now.', __FILE__);
 
             //if not already on the profile page, redirect to it
             if($this->wire('page')->template != 'admin' && $this->data['autoloadFrontend'] && $this->data['frontendLoginUrl'] != '') {
@@ -128,7 +124,7 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
             $process = $this->wire('process');
             if($process instanceof WirePageEditor) {
                 $inputfield = $event->object;
-                $inputfield->notes = __('You must change your password and it must not match your last password.');
+                $inputfield->notes = __('You must change your password and it must not match your last password.', __FILE__);
                 $inputfield->collapsed = Inputfield::collapsedNo;
             }
         }
@@ -175,8 +171,8 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
         $f = $this->wire('modules')->get("InputfieldCheckbox");
         $f->attr('name', 'autoloadFrontend');
-        $f->label = __('Load on Front-end');
-        $f->description = __('If checked, this module will be loaded on the front-end, as well as in the back-end admin.');
+        $f->label = __('Load on Front-end', __FILE__);
+        $f->description = __('If checked, this module will be loaded on the front-end, as well as in the back-end admin.', __FILE__);
         $f->columnWidth = 50;
         $f->attr('checked', $data['autoloadFrontend'] ? 'checked' : '' );
         $wrapper->add($f);
@@ -184,17 +180,17 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
         $f = $this->wire('modules')->get("InputfieldURL");
         $f->attr('name', 'frontendLoginUrl');
         $f->showIf = "autoloadFrontend=1";
-        $f->label = __('Frontend Login URL');
-        $f->description = __('If you have a front-end login form and you are loading this module on the front-end, enter the URL to your profile editing page where they can change their password. You can enter a root relative or absolute URL.');
-        $f->notes = __('This will not affect users in the backend - they will still be redirected to the main profile editing page.');
+        $f->label = __('Frontend Login URL', __FILE__);
+        $f->description = __('If you have a front-end login form and you are loading this module on the front-end, enter the URL to your profile editing page where they can change their password. You can enter a root relative or absolute URL.', __FILE__);
+        $f->notes = __('This will not affect users in the backend - they will still be redirected to the main profile editing page.', __FILE__);
         $f->columnWidth = 50;
         if($data['frontendLoginUrl']) $f->attr('value', $data['frontendLoginUrl']);
         $wrapper->add($f);
 
         $f = $this->wire('modules')->get("InputfieldCheckbox");
         $f->attr('name', 'automaticForceChange');
-        $f->label = __('Automatic Force Change');
-        $f->description = __('If checked, the "Force Password Change" option will be automatically checked for each new user when they are created.');
+        $f->label = __('Automatic Force Change', __FILE__);
+        $f->description = __('If checked, the "Force Password Change" option will be automatically checked for each new user when they are created.', __FILE__);
         $f->attr('checked', $data['automaticForceChange'] ? 'checked' : '' );
         $wrapper->add($f);
 
@@ -205,9 +201,9 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
         $f = $this->wire('modules')->get("InputfieldRadios");
         $f->attr('name', 'bulkAction');
-        $f->label = __('Bulk Action');
-        $f->description = __('The "Check" option will immediately check the "Force Password Change" option for all existing users. You can use the "Clear" option to revert this and uncheck it for all users.');
-        $f->notes = __("Use with extreme caution! This will force all users (except you) to change their password on their next login or admin page view\nThis may take a long time if you have a lot of users.");
+        $f->label = __('Bulk Action', __FILE__);
+        $f->description = __('The "Check" option will immediately check the "Force Password Change" option for all existing users. You can use the "Clear" option to revert this and uncheck it for all users.', __FILE__);
+        $f->notes = __("Use with extreme caution! This will force all users (except you) to change their password on their next login or admin page view\nThis may take a long time if you have a lot of users.", __FILE__);
         $f->addOption('none', 'No Action');
         $f->addOption('1', 'Check');
         $f->addOption('', 'Clear');
@@ -218,9 +214,9 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
         $f->attr('name', 'allowedRoles');
         $f->required = 1;
         $f->requiredIf = "bulkAction!=none";
-        $f->label = __('User roles to check or clear the Force Password Change option.');
-        $f->description = __('The "Check" or "Clear" option will only apply to these selected roles.');
-        $f->notes = __('This list is limited to only roles that have the "profile-edit" permission, otherwise the user wouldn\'t be able to change their password');
+        $f->label = __('User roles to check or clear the Force Password Change option.', __FILE__);
+        $f->description = __('The "Check" or "Clear" option will only apply to these selected roles.', __FILE__);
+        $f->notes = __('This list is limited to only roles that have the "profile-edit" permission, otherwise the user wouldn\'t be able to change their password', __FILE__);
 
         // populate with all available roles
         foreach($this->wire('roles') as $roleoption) {
