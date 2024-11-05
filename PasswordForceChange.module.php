@@ -22,7 +22,7 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
             'summary' => 'Force users to change password.',
             'author' => 'Adrian Jones',
             'href' => 'http://modules.processwire.com/modules/password-force-change/',
-            'version' => '1.0.5',
+            'version' => '1.0.6',
             'autoload' => true,
             'singular' => true,
             'icon' => 'key',
@@ -54,9 +54,9 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
      *
      */
     public function __construct() {
-       foreach(self::getDefaultData() as $key => $value) {
-               $this->$key = $value;
-       }
+        foreach(self::getDefaultData() as $key => $value) {
+            $this->$key = $value;
+        }
     }
 
     public function init() {
@@ -65,6 +65,14 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
     public function ready() {
         //exit now if front-end and autoloadFrontend not checked
         if($this->wire('page')->template != 'admin' && !$this->data['autoloadFrontend']) return;
+
+        if($this->wire('user')->force_passwd_change && $this->wire('user')->isLoggedin()) {
+            $this->wire()->warning($this->_('You must change your password and it must not match your last password.'));
+        }
+        else {
+            $this->wire('session')->removeNotices();
+            $this->warnings('all clear');
+        }
 
         $this->wire()->addHookBefore('Pages::saveReady', $this, 'saveUserChecks');
         $this->wire()->addHookAfter('PageRender::renderPage', $this, 'profileRedirect');
@@ -75,14 +83,14 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
     protected function saveUserChecks(HookEvent $event) {
 
-        $page = $event->arguments[0];
+        $p = $event->arguments[0];
 
-        if(!in_array($page->template->id, $this->wire('config')->userTemplateIDs)) return; //return now if not a user template
+        if(!in_array($p->template->id, $this->wire('config')->userTemplateIDs)) return; //return now if not a user template
 
-        if($page->isNew()) {
-            if($this->data['automaticForceChange']) $page->force_passwd_change = 1;
+        if($p->isNew()) {
+            if($this->data['automaticForceChange']) $p->force_passwd_change = 1;
         }
-        elseif($page->force_passwd_change) { //if force_passwd_change not checked we don't need to worry about whether they have profile-edit permission
+        elseif($p->force_passwd_change) { //if force_passwd_change not checked we don't need to worry about whether they have profile-edit permission
             $process = $this->wire('process');
             if($process instanceof WirePageEditor) {
                 $newuser = $process->getPage();
@@ -99,7 +107,6 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
     protected function profileRedirect() {
         if($this->wire('user')->force_passwd_change && $this->wire('user')->isLoggedin() && $this->wire('page')->process != 'ProcessUser') {
-            $this->wire()->error($this->_('You must change your password and it must not match your last password.'));
             $f = $this->wire('fields')->get("pass");
             $f->collapsed = Inputfield::collapsedNo;
             $f->notes = __('You must change your password now.', __FILE__);
@@ -291,4 +298,3 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
     }
 
 }
-
