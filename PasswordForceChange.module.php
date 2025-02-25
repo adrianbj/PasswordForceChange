@@ -22,7 +22,7 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
             'summary' => 'Force users to change password.',
             'author' => 'Adrian Jones',
             'href' => 'http://modules.processwire.com/modules/password-force-change/',
-            'version' => '1.0.6',
+            'version' => '1.0.7',
             'autoload' => true,
             'singular' => true,
             'icon' => 'key',
@@ -68,10 +68,6 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
         if($this->wire('user')->force_passwd_change && $this->wire('user')->isLoggedin()) {
             $this->wire()->warning($this->_('You must change your password and it must not match your last password.'));
-        }
-        else {
-            $this->wire('session')->removeNotices();
-            $this->warnings('all clear');
         }
 
         $this->wire()->addHookBefore('Pages::saveReady', $this, 'saveUserChecks');
@@ -146,6 +142,8 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
             $this->wire('user')->of(false);
             $this->wire('user')->force_passwd_change = ''; //uncheck once password has been changed
             $this->wire('user')->save();
+            $this->wire('session')->removeNotices();
+            $this->warnings('all clear');
         }
         else {
             $this->profileRedirect();
