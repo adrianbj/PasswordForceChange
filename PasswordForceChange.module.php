@@ -201,7 +201,7 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
 
         $fieldset = $this->wire('modules')->get("InputfieldFieldset");
         $fieldset->attr('id', 'setAllUsers');
-        $fieldset->label = "Set All Users";
+        $fieldset->label = __('Set All Users', __FILE__);
         $fieldset->collapsed = Inputfield::collapsedYes;
 
         $f = $this->wire('modules')->get("InputfieldRadios");
@@ -209,9 +209,9 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
         $f->label = __('Bulk Action', __FILE__);
         $f->description = __('The "Check" option will immediately check the "Force Password Change" option for all existing users. You can use the "Clear" option to revert this and uncheck it for all users.', __FILE__);
         $f->notes = __("Use with extreme caution! This will force all users (except you) to change their password on their next login or admin page view\nThis may take a long time if you have a lot of users.", __FILE__);
-        $f->addOption('none', 'No Action');
-        $f->addOption('1', 'Check');
-        $f->addOption('', 'Clear');
+        $f->addOption('none', __('No Action', __FILE__));
+        $f->addOption('1', __('Check', __FILE__));
+        $f->addOption('', __('Clear', __FILE__));
         $f->value = 'none';
         $fieldset->add($f);
 
@@ -260,9 +260,9 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
             $f = new Field();
             $f->type = "FieldtypeCheckbox";
             $f->name = "force_passwd_change";
-            $f->label = "Force password change on next login";
-            $f->description = "This is used by the Force Password Change module. You can check this at any time to force the user to change their password on next login.";
-            $f->notes = "This will be automatically unchecked when the user changes their password.";
+            $f->label = __('Force password change on next login', __FILE__);
+            $f->description = __('This is used by the Force Password Change module. You can check this at any time to force the user to change their password on next login.', __FILE__);
+            $f->notes = __('This will be automatically unchecked when the user changes their password.', __FILE__);
             $f->collapsed = Inputfield::collapsedBlank;
             $f->save();
 
