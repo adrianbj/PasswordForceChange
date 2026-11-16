@@ -22,7 +22,7 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
             'summary' => 'Force users to change password.',
             'author' => 'Adrian Jones',
             'href' => 'http://modules.processwire.com/modules/password-force-change/',
-            'version' => '1.0.7',
+            'version' => '1.0.8',
             'autoload' => true,
             'singular' => true,
             'icon' => 'key',
@@ -142,6 +142,12 @@ class PasswordForceChange extends WireData implements Module, ConfigurableModule
             $this->wire('user')->of(false);
             $this->wire('user')->force_passwd_change = ''; //uncheck once password has been changed
             $this->wire('user')->save();
+            // The password is saved here, before the editor that set it saves the user, so that
+            // editor no longer sees a password change to keep this session for. Since 3.0.276 the
+            // core ends every session of an account whose password changed unless it is told to
+            // keep the one that made the change.
+            $session = $this->wire('session');
+            if(method_exists($session, 'refreshUserAuthHash')) $session->refreshUserAuthHash($this->wire('user'));
             $this->wire('session')->removeNotices();
             $this->warnings('all clear');
         }
